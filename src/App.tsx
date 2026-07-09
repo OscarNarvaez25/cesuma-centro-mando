@@ -2000,7 +2000,7 @@ function BuzonColab({ onEnviar }) {
     setTexto(""); setNombre(""); setEnviado(true);
     setTimeout(() => setEnviado(false), 3500);
   };
-  const TIPO_COLOR = { Sugerencia: C.blue, Queja: C.amber, Denuncia: C.red };
+  const TIPO_COLOR = { Felicitación: C.green, Sugerencia: C.blue, Queja: C.amber, Denuncia: C.red };
   return (
     <div className="space-y-5">
       <Card>
@@ -2013,7 +2013,7 @@ function BuzonColab({ onEnviar }) {
           <div>
             <div className="text-sm font-semibold mb-2" style={{ color: C.navy }}>Tipo de mensaje</div>
             <div className="flex gap-2 flex-wrap">
-              {["Sugerencia", "Queja", "Denuncia"].map((t) => (
+              {["Felicitación", "Sugerencia", "Queja", "Denuncia"].map((t) => (
                 <button key={t} onClick={() => setTipo(t)} className="px-4 py-2 rounded-full text-sm font-semibold" style={{ background: tipo === t ? TIPO_COLOR[t] : C.cream, color: tipo === t ? "white" : C.ink }}>
                   {t}
                 </button>
