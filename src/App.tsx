@@ -1988,7 +1988,7 @@ function ColabEvaluacion({ me, setAutoeval, submitAutoeval }) {
 }
 
 /* ---------------------------------- admin ---------------------------------- */
-function BuzonColab({ onEnviar, mensajes }) {
+function BuzonColab({ onEnviar }) {
   const [tipo, setTipo] = useState("Sugerencia");
   const [texto, setTexto] = useState("");
   const [anonimo, setAnonimo] = useState(true);
@@ -1996,19 +1996,23 @@ function BuzonColab({ onEnviar, mensajes }) {
   const [enviado, setEnviado] = useState(false);
   const enviar = () => {
     if (!texto.trim()) return;
-    onEnviar({ id: Date.now(), tipo, texto, nombre: anonimo ? "Anónimo" : nombre || "Sin nombre", fecha: new Date().toLocaleDateString("es-MX") });
+    onEnviar({ id: Date.now(), tipo, texto, nombre: anonimo ? "Anónimo" : nombre || "Sin nombre", fecha: new Date().toLocaleDateString("es-MX"), leido: false });
     setTexto(""); setNombre(""); setEnviado(true);
-    setTimeout(() => setEnviado(false), 3000);
+    setTimeout(() => setEnviado(false), 3500);
   };
   const TIPO_COLOR = { Sugerencia: C.blue, Queja: C.amber, Denuncia: C.red };
   return (
     <div className="space-y-5">
       <Card>
-        <SectionTitle icon={Bell} sub="Tu voz importa. Puedes enviar de forma anónima o dejando tu nombre.">Buzón de comunicación interna</SectionTitle>
+        <div className="mb-5">
+          <h2 className="text-lg font-bold mb-1" style={{ color: C.navy }}>Buzón de comunicación interna</h2>
+          <p className="text-sm" style={{ color: C.sub }}>Un espacio seguro para compartir ideas, reportar situaciones y contribuir a la mejora continua de CESUMA.</p>
+          <p className="text-xs mt-1" style={{ color: C.sub }}>Gestionado por el Departamento de Estrategia y Mejora Continua (EMC).</p>
+        </div>
         <div className="space-y-4">
           <div>
             <div className="text-sm font-semibold mb-2" style={{ color: C.navy }}>Tipo de mensaje</div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {["Sugerencia", "Queja", "Denuncia"].map((t) => (
                 <button key={t} onClick={() => setTipo(t)} className="px-4 py-2 rounded-full text-sm font-semibold" style={{ background: tipo === t ? TIPO_COLOR[t] : C.cream, color: tipo === t ? "white" : C.ink }}>
                   {t}
@@ -2018,26 +2022,34 @@ function BuzonColab({ onEnviar, mensajes }) {
           </div>
           <div>
             <div className="text-sm font-semibold mb-2" style={{ color: C.navy }}>Tu mensaje</div>
-            <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={4} placeholder="Escribe aquí tu mensaje..." className="w-full rounded-xl px-4 py-3 text-sm border resize-none" style={{ borderColor: "#E7E2D4", fontFamily: "inherit" }} />
+            <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={5} placeholder="Escribe aquí tu mensaje con el detalle que consideres necesario..." className="w-full rounded-xl px-4 py-3 text-sm border resize-none" style={{ borderColor: "#E7E2D4", fontFamily: "inherit", background: C.cream }} />
           </div>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" checked={anonimo} onChange={(e) => setAnonimo(e.target.checked)} />
-            <span className="text-sm font-semibold" style={{ color: C.navy }}>Enviar de forma anónima</span>
-          </label>
-          {!anonimo && (
-            <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tu nombre (opcional)" className="w-full rounded-xl px-4 py-3 text-sm border" style={{ borderColor: "#E7E2D4" }} />
-          )}
+          <div className="rounded-xl p-4" style={{ background: C.cream }}>
+            <label className="flex items-center gap-3 cursor-pointer mb-3">
+              <input type="checkbox" checked={anonimo} onChange={(e) => setAnonimo(e.target.checked)} style={{ width: 16, height: 16 }} />
+              <div>
+                <div className="text-sm font-semibold" style={{ color: C.navy }}>Enviar de forma anónima</div>
+                <div className="text-xs" style={{ color: C.sub }}>Tu identidad no será revelada a nadie, ni al EMC ni a directivos.</div>
+              </div>
+            </label>
+            {!anonimo && (
+              <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tu nombre completo (opcional)" className="w-full rounded-xl px-4 py-2.5 text-sm border" style={{ borderColor: "#E7E2D4", background: "white" }} />
+            )}
+          </div>
           {enviado ? (
-            <div className="rounded-xl p-3 text-sm font-semibold" style={{ background: `${C.green}15`, color: C.green }}>✓ Mensaje enviado correctamente.</div>
+            <div className="rounded-xl p-4 text-sm font-semibold" style={{ background: `${C.green}15`, color: C.green }}>
+              ✓ Mensaje enviado correctamente. El equipo EMC lo revisará pronto.
+            </div>
           ) : (
-            <button onClick={enviar} disabled={!texto.trim()} className="px-6 py-2.5 rounded-full text-sm font-bold text-white disabled:opacity-40" style={{ background: C.navy }}>Enviar mensaje</button>
+            <button onClick={enviar} disabled={!texto.trim()} className="px-6 py-3 rounded-full text-sm font-bold text-white disabled:opacity-40" style={{ background: C.navy }}>
+              Enviar mensaje
+            </button>
           )}
         </div>
       </Card>
     </div>
   );
 }
-
 function BuzonAdmin({ mensajes, marcarLeido }) {
   const TIPO_COLOR = { Sugerencia: C.blue, Queja: C.amber, Denuncia: C.red };
   return (
