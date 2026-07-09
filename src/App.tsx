@@ -3325,7 +3325,8 @@ const marcarLeido = (id) => setBuzonMensajes((prev) => prev.map((m) => m.id === 
             viewerName={me.name}
           />
         )}
-        {role === 'colaborador' && colabTab === 'recursos' && <Recursos />}
+        
+        {role === 'colaborador' && colabTab === 'buzon' && <BuzonColab onEnviar={onBuzonEnviar} />}
         
 
         {role === 'admin' && adminView == null && adminTab === 'resumen' && (
