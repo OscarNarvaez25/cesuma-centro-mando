@@ -1988,6 +1988,85 @@ function ColabEvaluacion({ me, setAutoeval, submitAutoeval }) {
 }
 
 /* ---------------------------------- admin ---------------------------------- */
+function BuzonColab({ onEnviar, mensajes }) {
+  const [tipo, setTipo] = useState("Sugerencia");
+  const [texto, setTexto] = useState("");
+  const [anonimo, setAnonimo] = useState(true);
+  const [nombre, setNombre] = useState("");
+  const [enviado, setEnviado] = useState(false);
+  const enviar = () => {
+    if (!texto.trim()) return;
+    onEnviar({ id: Date.now(), tipo, texto, nombre: anonimo ? "Anónimo" : nombre || "Sin nombre", fecha: new Date().toLocaleDateString("es-MX") });
+    setTexto(""); setNombre(""); setEnviado(true);
+    setTimeout(() => setEnviado(false), 3000);
+  };
+  const TIPO_COLOR = { Sugerencia: C.blue, Queja: C.amber, Denuncia: C.red };
+  return (
+    <div className="space-y-5">
+      <Card>
+        <SectionTitle icon={Bell} sub="Tu voz importa. Puedes enviar de forma anónima o dejando tu nombre.">Buzón de comunicación interna</SectionTitle>
+        <div className="space-y-4">
+          <div>
+            <div className="text-sm font-semibold mb-2" style={{ color: C.navy }}>Tipo de mensaje</div>
+            <div className="flex gap-2">
+              {["Sugerencia", "Queja", "Denuncia"].map((t) => (
+                <button key={t} onClick={() => setTipo(t)} className="px-4 py-2 rounded-full text-sm font-semibold" style={{ background: tipo === t ? TIPO_COLOR[t] : C.cream, color: tipo === t ? "white" : C.ink }}>
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="text-sm font-semibold mb-2" style={{ color: C.navy }}>Tu mensaje</div>
+            <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={4} placeholder="Escribe aquí tu mensaje..." className="w-full rounded-xl px-4 py-3 text-sm border resize-none" style={{ borderColor: "#E7E2D4", fontFamily: "inherit" }} />
+          </div>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" checked={anonimo} onChange={(e) => setAnonimo(e.target.checked)} />
+            <span className="text-sm font-semibold" style={{ color: C.navy }}>Enviar de forma anónima</span>
+          </label>
+          {!anonimo && (
+            <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tu nombre (opcional)" className="w-full rounded-xl px-4 py-3 text-sm border" style={{ borderColor: "#E7E2D4" }} />
+          )}
+          {enviado ? (
+            <div className="rounded-xl p-3 text-sm font-semibold" style={{ background: `${C.green}15`, color: C.green }}>✓ Mensaje enviado correctamente.</div>
+          ) : (
+            <button onClick={enviar} disabled={!texto.trim()} className="px-6 py-2.5 rounded-full text-sm font-bold text-white disabled:opacity-40" style={{ background: C.navy }}>Enviar mensaje</button>
+          )}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function BuzonAdmin({ mensajes, marcarLeido }) {
+  const TIPO_COLOR = { Sugerencia: C.blue, Queja: C.amber, Denuncia: C.red };
+  return (
+    <div className="space-y-5">
+      <Card>
+        <SectionTitle icon={Bell} sub={`${mensajes.length} mensaje${mensajes.length !== 1 ? "s" : ""} recibido${mensajes.length !== 1 ? "s" : ""}.`}>Buzón de comunicación interna</SectionTitle>
+        {mensajes.length === 0 ? (
+          <p className="text-sm" style={{ color: C.sub }}>No hay mensajes aún.</p>
+        ) : (
+          <div className="space-y-3">
+            {[...mensajes].reverse().map((m) => (
+              <div key={m.id} className="rounded-xl p-4" style={{ background: m.leido ? C.cream : `${C.blue}0D`, border: `1px solid ${m.leido ? "#E7E2D4" : C.blue}` }}>
+                <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <Badge color={TIPO_COLOR[m.tipo]}>{m.tipo}</Badge>
+                    <span className="text-xs font-semibold" style={{ color: C.navy }}>{m.nombre}</span>
+                    <span className="text-xs" style={{ color: C.sub }}>· {m.fecha}</span>
+                  </div>
+                  {!m.leido && <button onClick={() => marcarLeido(m.id)} className="text-xs font-bold" style={{ color: C.blue }}>Marcar como leído</button>}
+                </div>
+                <p className="text-sm" style={{ color: C.ink }}>{m.texto}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
 function AdminResumen({ collabs, tasks, setView }) {
   const [scopeMode, setScopeMode] = useState('todo');
   const allAreas = [...new Set(collabs.map((c) => c.area))];
@@ -2977,6 +3056,7 @@ const COLAB_TABS = [
   { id: 'evaluacion', label: 'Evaluación', icon: Award },
   { id: 'intranet', label: 'Intranet', icon: MessageSquare },
   { id: 'recursos', label: 'Recursos', icon: FolderOpen },
+  { id: "buzon", label: "Buzón", icon: Bell },
 ];
 const ADMIN_TABS = [
   { id: 'resumen', label: 'Resumen de equipo', icon: BarChart3 },
@@ -2985,6 +3065,7 @@ const ADMIN_TABS = [
   { id: 'evaluaciones', label: 'Evaluaciones', icon: Award },
   { id: 'intranet', label: 'Intranet', icon: MessageSquare },
   { id: 'recursos', label: 'Recursos', icon: FolderOpen },
+  { id: "buzon", label: "Buzón", icon: Bell },
 ];
 
 function Header({ role, setRole, tab, setTab, tabs, viewerName }) {
@@ -3068,6 +3149,9 @@ export default function App() {
   const [collabs, setCollabs] = useState(INITIAL_COLLABORATORS);
   const [tasks, setTasks] = useState(INITIAL_TASKS);
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
+  const [buzonMensajes, setBuzonMensajes] = useState([]);
+const onBuzonEnviar = (msg) => setBuzonMensajes((prev) => [...prev, msg]);
+const marcarLeido = (id) => setBuzonMensajes((prev) => prev.map((m) => m.id === id ? { ...m, leido: true } : m));
   const [role, setRole] = useState('colaborador');
   const [colabTab, setColabTab] = useState('inicio');
   const [adminTab, setAdminTab] = useState('resumen');
@@ -3230,6 +3314,7 @@ export default function App() {
           />
         )}
         {role === 'colaborador' && colabTab === 'recursos' && <Recursos />}
+        
 
         {role === 'admin' && adminView == null && adminTab === 'resumen' && (
           <AdminResumen
@@ -3275,6 +3360,7 @@ export default function App() {
         {role === 'admin' && adminView == null && adminTab === 'recursos' && (
           <Recursos />
         )}
+        {role === 'admin' && adminView == null && adminTab === 'buzon' && <BuzonAdmin mensajes={buzonMensajes} marcarLeido={marcarLeido} />}
         {role === 'admin' && adminView != null && (
           <AdminDetalle
             c={collabs.find((c) => c.id === adminView)}
